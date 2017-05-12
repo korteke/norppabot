@@ -60,6 +60,7 @@ public class DetectNorppa {
                 //.withMinConfidence(75F);
 
         float confidence = 0.0f;
+        int norppa = 0;
 
         try {
             DetectLabelsResult result = rekognitionClient.detectLabels(request);
@@ -70,6 +71,7 @@ public class DetectNorppa {
                 if ("animal".equals(label.toString().toLowerCase()) && !norppaStatus.isNorppaDetected()) {
                     // TODO: Send tweet & Pushover
                     log.info("Animal detected");
+                    norppa++;
                     norppaStatus.setNorppaDetected(true);
                     confidence = label.getConfidence();
                 }
