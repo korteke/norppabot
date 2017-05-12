@@ -48,7 +48,7 @@ public class FFmpegService {
 
     }
 
-    @Scheduled(cron="0 */1 6-23 * * *")
+    @Scheduled(cron="0 */2 6-23 * * *")
     public void getFrameFromNorppalive() throws IOException {
 
         FFmpeg ffmpeg = new FFmpeg(execPath);
@@ -61,6 +61,8 @@ public class FFmpegService {
                 .addExtraArgs("-ss","1.0")
                 .addExtraArgs("-t", "1")
                 .addExtraArgs("-vframes", "1")
+                .addExtraArgs("-qscale","1")
+                .addExtraArgs("-q:v", "1")
                 .done();
 
         FFmpegExecutor executor = new FFmpegExecutor(ffmpeg, ffprobe);

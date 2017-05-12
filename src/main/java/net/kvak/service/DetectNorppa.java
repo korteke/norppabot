@@ -13,9 +13,12 @@ import com.amazonaws.services.rekognition.model.DetectLabelsResult;
 import com.amazonaws.services.rekognition.model.Image;
 import com.amazonaws.services.rekognition.model.Label;
 import lombok.extern.slf4j.Slf4j;
+import net.kvak.model.NorppaStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -24,6 +27,9 @@ import java.util.List;
 @Component
 @Slf4j
 public class DetectNorppa {
+
+    @Autowired
+    NorppaStatus norppaStatus;
 
     public DetectNorppa() {
     }
@@ -46,19 +52,31 @@ public class DetectNorppa {
 
         DetectLabelsRequest request = new DetectLabelsRequest()
                 .withImage(new Image().withBytes(ByteBuffer.wrap(imageBytes)))
-                .withMaxLabels(10)
-                .withMinConfidence(77F);
+                .withMaxLabels(10);
+                //.withMinConfidence(75F);
 
         try {
             DetectLabelsResult result = rekognitionClient.detectLabels(request);
             List <Label> labels = result.getLabels();
 
-            System.out.println("Detected labels");
+            log.info("Analyzing scene");
             for (Label label: labels) {
-                log.debug(label.getName() + ": " + label.getConfidence().toString());
+                if ("animal".equals(label.toString().toLowerCase()) && !norppaStatus.isNorppaDetected()) {
+                    log.info("Animal detected");
+                    norppaStatus.setNorppaDetected(true);
+                    // Send tweet & Pushover
+                } else {
+                    norppaStatus.setNorppaDetected(false);
+                }
+                log.info(label.getName() + " - confidence: " + roundFloat(label.getConfidence()) +"%");
             }
         } catch(AmazonRekognitionException e) {
             e.printStackTrace();
         }
+    }
+
+    private double roundFloat(double d) {
+        DecimalFormat twoDForm = new DecimalFormat("#.##");
+        return Double.valueOf(twoDForm.format(d));
     }
 }
