@@ -13,6 +13,7 @@ import com.amazonaws.services.rekognition.model.DetectLabelsResult;
 import com.amazonaws.services.rekognition.model.Image;
 import com.amazonaws.services.rekognition.model.Label;
 import lombok.extern.slf4j.Slf4j;
+import net.kvak.messaging.PushoverMessageClient;
 import net.kvak.model.NorppaStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,9 @@ public class DetectNorppa {
 
     @Autowired
     NorppaStatus norppaStatus;
+
+    @Autowired
+    PushoverMessageClient pushoverMessageClient;
 
     public DetectNorppa() {
     }
@@ -55,6 +59,8 @@ public class DetectNorppa {
                 .withMaxLabels(10);
                 //.withMinConfidence(75F);
 
+        float confidence = 0.0f;
+
         try {
             DetectLabelsResult result = rekognitionClient.detectLabels(request);
             List <Label> labels = result.getLabels();
@@ -62,17 +68,21 @@ public class DetectNorppa {
             log.info("Analyzing scene");
             for (Label label: labels) {
                 if ("animal".equals(label.toString().toLowerCase()) && !norppaStatus.isNorppaDetected()) {
+                    // TODO: Send tweet & Pushover
                     log.info("Animal detected");
                     norppaStatus.setNorppaDetected(true);
-                    // Send tweet & Pushover
-                } else {
-                    norppaStatus.setNorppaDetected(false);
+                    confidence = label.getConfidence();
                 }
                 log.info(label.getName() + " - confidence: " + roundFloat(label.getConfidence()) +"%");
             }
         } catch(AmazonRekognitionException e) {
             e.printStackTrace();
         }
+
+        if (norppaStatus.isNorppaDetected()) {
+            pushoverMessageClient.sendMessage("Animal detected. confidence: " + roundFloat(confidence) +"%");
+        }
+        norppaStatus.setNorppaDetected(false);
     }
 
     private double roundFloat(double d) {
