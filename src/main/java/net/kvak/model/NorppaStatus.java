@@ -13,7 +13,7 @@ public class NorppaStatus {
 
     private static AtomicReference<NorppaStatus> INSTANCE = new AtomicReference<NorppaStatus>();
 
-    private boolean norppaDetected;
+    private boolean norppaDetected = false;
 
     public NorppaStatus() {
         final NorppaStatus previous = INSTANCE.getAndSet(this);

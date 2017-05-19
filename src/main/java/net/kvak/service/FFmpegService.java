@@ -22,7 +22,6 @@ import java.nio.file.Files;
 @Slf4j
 public class FFmpegService {
 
-
     @NonNull
     @Value("${ffmpeg.norppaUrl}")
     private String norppaUrl;
@@ -48,7 +47,7 @@ public class FFmpegService {
 
     }
 
-    @Scheduled(cron="0 */2 6-23 * * *")
+    @Scheduled(cron="0 */3 6-23 * * *")
     public void getFrameFromNorppalive() throws IOException {
 
         FFmpeg ffmpeg = new FFmpeg(execPath);
@@ -80,5 +79,4 @@ public class FFmpegService {
         File file = new File(imagePath);
         return Files.readAllBytes(file.toPath());
     }
-
 }
