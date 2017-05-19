@@ -52,6 +52,10 @@ public class DetectNorppa {
     @Value("${twitter.message}")
     private String message;
 
+    @NonNull
+    @Value("${norppis.minConfidence}")
+    private String minConfidence;
+
     public DetectNorppa() {
     }
 
@@ -74,7 +78,7 @@ public class DetectNorppa {
         DetectLabelsRequest request = new DetectLabelsRequest()
                 .withImage(new Image().withBytes(ByteBuffer.wrap(imageBytes)))
                 .withMaxLabels(10)
-                .withMinConfidence(75F);
+                .withMinConfidence(Float.valueOf(minConfidence));
 
         try {
             DetectLabelsResult result = rekognitionClient.detectLabels(request);
