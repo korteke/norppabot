@@ -86,7 +86,7 @@ public class DetectNorppa {
 
             log.info("Analyzing scene");
             for (Label label: labels) {
-                if ("animal".equals(label.toString().toLowerCase())) {
+                if ("animal".equals(label.getName().toLowerCase())) {
                     if (!norppaStatus.isNorppaDetected()) {
                         log.info("Animal detected");
                         norppaStatus.setNorppaDetected(true);
