@@ -1,0 +1,31 @@
+# Spring settings
+spring:
+  profiles:
+    active: production
+
+# FFmpeg settings
+ffmpeg:
+  execPath: /bin/ffmpeg
+  probeExecPath: /bin/ffprobe
+  norppaUrl: http://ams3-automatic-wtvzn.pukkistream.net:1935/abr/norppalive/live/norppalive_720p/chunks.m3u8
+  filePath: /opt/norppabot/norppis.jpg
+
+# Pushover settings
+pushover:
+  enabled: true
+  apiToken: xxx
+  userToken: xxx
+  title: Norppabot
+
+# Twitter settings
+twitter:
+  consumerKey: xxx
+  consumerSecret: xxx
+  accessToken: xxx
+  accessTokenSecret: xxx
+  message: Eläin havaittu. Onko se norppa?
+
+# Norppis settings
+norppis:
+  minConfidence: 65
+  schedule: 0 */1 6-23 * * *
