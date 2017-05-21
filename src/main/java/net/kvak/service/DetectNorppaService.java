@@ -110,6 +110,7 @@ public class DetectNorppaService {
                         }
                     }
                     break;
+
                 } else {
                     norppaStatus.setNorppaDetected(false);
                 }

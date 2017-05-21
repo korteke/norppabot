@@ -1,6 +1,5 @@
 package net.kvak.model;
 
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicReference;

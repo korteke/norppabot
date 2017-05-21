@@ -38,8 +38,6 @@ public class FFmpegService {
     @Value("${ffmpeg.probeExecPath}")
     private String probeExecPath;
 
-    private byte[] imageBytes;
-
     @Autowired
     private DetectNorppaService detectNorppaService;
 
@@ -64,7 +62,7 @@ public class FFmpegService {
         executor.createJob(builder).run();
 
         log.debug("Image to bytes");
-        imageBytes = extractImageBytes(filePath);
+        byte[] imageBytes = extractImageBytes(filePath);
 
         log.debug("Image to detection module");
         detectNorppaService.detect(imageBytes);
