@@ -19,6 +19,7 @@ import net.kvak.model.NorppaStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import twitter4j.Status;
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -84,33 +85,34 @@ public class DetectNorppaService {
 
             log.info("Analyzing scene");
             for (Label label: labels) {
+                log.info("{} - confidence: {}%",label.getName(),roundFloat(label.getConfidence()));
                 if ("animal".equals(label.getName().toLowerCase())) {
                     norppaStatus.setNorppaDetected(true);
                     log.info("Animal detected");
-
                     if (!prevStatus) {
                         log.info("New animal detection");
-                        log.info("{} - confidence: {}%",label.getName(),roundFloat(label.getConfidence()));
-
                         try {
-                            StatusUpdate status = new StatusUpdate(message);
+                            StatusUpdate statusUpdate = new StatusUpdate(message);
                             File file = new File(filePath);
-                            status.setMedia(file);
+                            statusUpdate.setMedia(file);
 
-                            twitter.updateStatus(status);
-                            pushoverMessageClient.sendMessage("Animal detected. confidence: " + roundFloat(label.getConfidence()) + "%");
+                            Status status = twitter.updateStatus(statusUpdate);
+                            StringBuilder sb = new StringBuilder();
+                            sb.append("https://twitter.com/");
+                            sb.append(status.getUser().getScreenName());
+                            sb.append("/status/");
+                            sb.append(status.getId());
+
+                            pushoverMessageClient.sendMessage("Animal detected. confidence: " +
+                                    roundFloat(label.getConfidence()) + "%\n URL: " + sb.toString());
                         } catch (TwitterException e) {
                             log.error("Twitter exception {}", e.getErrorMessage());
                         }
                     }
-
                     break;
-
                 } else {
                     norppaStatus.setNorppaDetected(false);
                 }
-
-                log.info("{} - confidence: {}%",label.getName(),roundFloat(label.getConfidence()));
             }
         } catch(AmazonRekognitionException e) {
             e.printStackTrace();

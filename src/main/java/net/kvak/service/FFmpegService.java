@@ -43,7 +43,7 @@ public class FFmpegService {
     @Autowired
     private DetectNorppaService detectNorppaService;
 
-    @Scheduled(cron = "${norppis.schedule}")
+    @Scheduled(cron = "${norppis.schedule}",zone = "Europe/Helsinki")
     public void getFrameFromNorppalive() throws IOException {
 
         FFmpeg ffmpeg = new FFmpeg(execPath);

@@ -23,7 +23,7 @@ twitter:
   consumerSecret: xxx
   accessToken: xxx
   accessTokenSecret: xxx
-  message: Eläin havaittu. Onko se norppa?
+  message: "Eläin havaittu. Onko se norppa? #norppalive #norppa #pullervo"
 
 # Norppis settings
 norppis:
