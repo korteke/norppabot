@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class DetectNorppa {
+public class DetectNorppaService {
 
     @Autowired
     private NorppaStatus norppaStatus;
@@ -55,9 +55,6 @@ public class DetectNorppa {
     @NonNull
     @Value("${norppis.minConfidence}")
     private String minConfidence;
-
-    public DetectNorppa() {
-    }
 
     public void detect(byte[] imageBytes) {
 
@@ -81,33 +78,39 @@ public class DetectNorppa {
                 .withMinConfidence(Float.valueOf(minConfidence));
 
         try {
+            boolean prevStatus = norppaStatus.isNorppaDetected();
             DetectLabelsResult result = rekognitionClient.detectLabels(request);
             List <Label> labels = result.getLabels();
 
             log.info("Analyzing scene");
             for (Label label: labels) {
-                if ("animal".equals(label.toString().toLowerCase())) {
-                    if (!norppaStatus.isNorppaDetected()) {
-                        log.info("Animal detected");
-                        norppaStatus.setNorppaDetected(true);
+                if ("animal".equals(label.getName().toLowerCase())) {
+                    norppaStatus.setNorppaDetected(true);
+                    log.info("Animal detected");
 
-                        StatusUpdate status = new StatusUpdate(message);
-                        File file = new File(filePath);
-                        status.setMedia(file);
+                    if (!prevStatus) {
+                        log.info("New animal detection");
+                        log.info("{} - confidence: {}%",label.getName(),roundFloat(label.getConfidence()));
 
                         try {
+                            StatusUpdate status = new StatusUpdate(message);
+                            File file = new File(filePath);
+                            status.setMedia(file);
+
                             twitter.updateStatus(status);
                             pushoverMessageClient.sendMessage("Animal detected. confidence: " + roundFloat(label.getConfidence()) + "%");
                         } catch (TwitterException e) {
-                            e.printStackTrace();
+                            log.error("Twitter exception {}", e.getErrorMessage());
                         }
                     }
+
+                    break;
 
                 } else {
                     norppaStatus.setNorppaDetected(false);
                 }
 
-                log.info(label.getName() + " - confidence: " + roundFloat(label.getConfidence()) +"%");
+                log.info("{} - confidence: {}%",label.getName(),roundFloat(label.getConfidence()));
             }
         } catch(AmazonRekognitionException e) {
             e.printStackTrace();
@@ -117,7 +120,7 @@ public class DetectNorppa {
     }
 
     private double roundFloat(double d) {
-        DecimalFormat twoDForm = new DecimalFormat("#.##");
-        return Double.valueOf(twoDForm.format(d));
+        DecimalFormat dFormat = new DecimalFormat("#.##");
+        return Double.valueOf(dFormat.format(d));
     }
 }

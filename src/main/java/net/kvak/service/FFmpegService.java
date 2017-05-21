@@ -41,13 +41,9 @@ public class FFmpegService {
     private byte[] imageBytes;
 
     @Autowired
-    private DetectNorppa detectNorppa;
+    private DetectNorppaService detectNorppaService;
 
-    public FFmpegService() throws IOException {
-
-    }
-
-    @Scheduled(cron="0 */3 6-23 * * *")
+    @Scheduled(cron = "${norppis.schedule}")
     public void getFrameFromNorppalive() throws IOException {
 
         FFmpeg ffmpeg = new FFmpeg(execPath);
@@ -71,7 +67,7 @@ public class FFmpegService {
         imageBytes = extractImageBytes(filePath);
 
         log.debug("Image to detection module");
-        detectNorppa.detect(imageBytes);
+        detectNorppaService.detect(imageBytes);
 
     }
 
