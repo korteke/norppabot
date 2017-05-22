@@ -26,11 +26,6 @@ public class PushoverConfiguration {
 
     @NonNull
     @Getter
-    @Value("${pushover.enabled}")
-    private String enabled;
-
-    @NonNull
-    @Getter
     @Value("${pushover.title}")
     private String title;
 

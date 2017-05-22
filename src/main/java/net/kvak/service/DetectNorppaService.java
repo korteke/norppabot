@@ -54,6 +54,10 @@ public class DetectNorppaService {
     private String message;
 
     @NonNull
+    @Value("${norppis.messaging.enabled}")
+    private String messagingEnabled;
+
+    @NonNull
     @Value("${norppis.minConfidence}")
     private String minConfidence;
 
@@ -83,6 +87,11 @@ public class DetectNorppaService {
             DetectLabelsResult result = rekognitionClient.detectLabels(request);
             List <Label> labels = result.getLabels();
 
+            if (labels.size() < 1) {
+                log.info("Min confidence is [{}] and no labels detected!",minConfidence);
+                norppaStatus.setNorppaDetected(false);
+            }
+
             log.info("Analyzing scene");
             for (Label label: labels) {
                 log.info("{} - confidence: {}%",label.getName(),roundFloat(label.getConfidence()));
@@ -92,19 +101,20 @@ public class DetectNorppaService {
                     if (!prevStatus) {
                         log.info("New animal detection");
                         try {
-                            StatusUpdate statusUpdate = new StatusUpdate(message);
-                            File file = new File(filePath);
-                            statusUpdate.setMedia(file);
+                            if (Boolean.valueOf(messagingEnabled)) {
+                                StatusUpdate statusUpdate = new StatusUpdate(message);
+                                File file = new File(filePath);
+                                statusUpdate.setMedia(file);
+                                Status status = twitter.updateStatus(statusUpdate);
 
-                            Status status = twitter.updateStatus(statusUpdate);
-                            StringBuilder sb = new StringBuilder();
-                            sb.append("https://twitter.com/");
-                            sb.append(status.getUser().getScreenName());
-                            sb.append("/status/");
-                            sb.append(status.getId());
-
-                            pushoverMessageClient.sendMessage("Animal detected. confidence: " +
-                                    roundFloat(label.getConfidence()) + "%\n URL: " + sb.toString());
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("https://twitter.com/");
+                                sb.append(status.getUser().getScreenName());
+                                sb.append("/status/");
+                                sb.append(status.getId());
+                                pushoverMessageClient.sendMessage("Animal detected. confidence: " +
+                                        roundFloat(label.getConfidence()) + "%\n URL: " + sb.toString());
+                            }
                         } catch (TwitterException e) {
                             log.error("Twitter exception {}", e.getErrorMessage());
                         }
