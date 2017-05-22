@@ -1,7 +1,7 @@
 # Spring settings
 spring:
   profiles:
-    active: dev
+    active: production
 
 # FFmpeg settings
 ffmpeg:
@@ -28,5 +28,7 @@ twitter:
 norppis:
   minConfidence: 65
   schedule: 0 */3 6-22 * * *
+  templateImagePath: /opt/norppabot/template.jpg
+  differencePercentLimit: 15.0f
   messaging:
     enabled: true

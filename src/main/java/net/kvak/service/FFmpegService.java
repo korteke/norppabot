@@ -41,6 +41,9 @@ public class FFmpegService {
     @Autowired
     private DetectNorppaService detectNorppaService;
 
+    @Autowired
+    private LocalImageProcessingService localImageProcessingService;
+
     @Scheduled(cron = "${norppis.schedule}",zone = "Europe/Helsinki")
     public void getFrameFromNorppalive() throws IOException {
 
@@ -61,14 +64,23 @@ public class FFmpegService {
         FFmpegExecutor executor = new FFmpegExecutor(ffmpeg, ffprobe);
         executor.createJob(builder).run();
 
-        log.debug("Image to bytes");
-        byte[] imageBytes = extractImageBytes(filePath);
+        log.debug("Image to local detection module");
 
-        log.debug("Image to detection module");
-        detectNorppaService.detect(imageBytes);
-
+        if (localImageProcessingService.compareAgainstTemplate(filePath)) {
+            log.info("Sending image to Amazon rekognition");
+            detectNorppaService.detect(extractImageBytes(filePath));
+        } else {
+            log.info("Not sending image to Amazon Rekognition. Trying to save little bit of money :)");
+        }
     }
 
+    /**
+     * Convert image path to bytes
+     *
+     * @param imagePath
+     * @return
+     * @throws IOException
+     */
     private byte[] extractImageBytes (String imagePath) throws IOException {
         File file = new File(imagePath);
         return Files.readAllBytes(file.toPath());
